@@ -12,7 +12,7 @@ public class Transaction {
     public String type;
 
     public Transaction(String recipientName, String recipientEmail, int recipientPhoto,
-                       double amount, String notes, long timestamp, String part) {
+                       double amount, String notes, long timestamp, String type) {
         this.recipientName = recipientName;
         this.recipientEmail = recipientEmail;
         this.recipientPhoto = recipientPhoto;

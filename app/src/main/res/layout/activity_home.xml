@@ -112,6 +112,21 @@
         app:layout_constraintVertical_bias="0.911" />
 
     <ImageView
+        android:id="@+id/imgLogout"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/ic_logout"
+        android:contentDescription="Cerrar sesión"
+        android:padding="8dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackgroundBorderless"
+        app:layout_constraintBottom_toBottomOf="@id/imgNotifications"
+        app:layout_constraintEnd_toStartOf="@id/imgNotifications"
+        app:layout_constraintTop_toTopOf="@id/imgNotifications"
+        android:layout_marginEnd="8dp"/>
+
+    <ImageView
         android:id="@+id/imgNotifications"
         android:layout_width="40dp"
         android:layout_height="40dp"

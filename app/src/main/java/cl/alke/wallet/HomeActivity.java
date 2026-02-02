@@ -22,10 +22,13 @@ import java.util.Locale;
 public class HomeActivity extends AppCompatActivity {
 
     private TextView txtBienvenida;
+    private TextView txtMonto;
     private LinearLayout layoutEmpty;
     private RecyclerView recyclerTransacciones;
     private LinearLayout btnSendMoney;
+    private LinearLayout btnIngresar;
     private ImageView imgProfile;
+    private ImageView imgLogout;
 
     private List<SendActivity.Transaction> transactions = new ArrayList<>();
     private TransaccionAdapter adapter;
@@ -36,10 +39,13 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_home);
 
         txtBienvenida = findViewById(R.id.txtBienvenida);
+        txtMonto = findViewById(R.id.txtMonto);
         layoutEmpty = findViewById(R.id.layoutEmpty);
         recyclerTransacciones = findViewById(R.id.recyclerTransacciones);
         btnSendMoney = findViewById(R.id.btnSend);
+        btnIngresar = findViewById(R.id.btnAdd);
         imgProfile = findViewById(R.id.imgProfile);
+        imgLogout = findViewById(R.id.imgLogout);
 
         mostrarUsuario();
 
@@ -49,23 +55,45 @@ public class HomeActivity extends AppCompatActivity {
         recyclerTransacciones.setAdapter(adapter);
 
         cargarTransacciones();
+        actualizarBalance();
 
         // Click en "Enviar Dinero"
         btnSendMoney.setOnClickListener(v -> {
             startActivity(new Intent(HomeActivity.this, SendActivity.class));
         });
 
+        // Click en "Ingresar"
+        btnIngresar.setOnClickListener(v -> {
+            startActivity(new Intent(HomeActivity.this, IngresarDineroActivity.class));
+        });
+
         // Click en perfil
         imgProfile.setOnClickListener(v -> {
             startActivity(new Intent(HomeActivity.this, ProfileActivity.class));
         });
+
+        // Cerrar sesión: borra todos los datos y vuelve a AuthSelectorActivity
+        imgLogout.setOnClickListener(v -> {
+            borrarDatosYVolverALogin();
+        });
+    }
+
+    private void borrarDatosYVolverALogin() {
+        getSharedPreferences("transactions", MODE_PRIVATE).edit().clear().apply();
+        getSharedPreferences("usuarios", MODE_PRIVATE).edit().clear().apply();
+        getSharedPreferences("send_money", MODE_PRIVATE).edit().clear().apply();
+
+        Intent intent = new Intent(HomeActivity.this, AuthSelectorActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        // Recargar transacciones cada vez que regresas a Home
         cargarTransacciones();
+        actualizarBalance();
         adapter.notifyDataSetChanged();
     }
 
@@ -94,6 +122,18 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
+    private void actualizarBalance() {
+        double balance = 0;
+        for (SendActivity.Transaction tx : transactions) {
+            if ("ingreso".equals(tx.type)) {
+                balance += tx.amount;
+            } else {
+                balance -= tx.amount;
+            }
+        }
+        txtMonto.setText(String.format(Locale.US, "$%.2f", balance));
+    }
+
     // Adapter para RecyclerView
     public static class TransaccionAdapter extends RecyclerView.Adapter<TransaccionAdapter.ViewHolder> {
 
@@ -115,7 +155,15 @@ public class HomeActivity extends AppCompatActivity {
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             SendActivity.Transaction tx = transactionList.get(position);
             holder.imgRecipient.setImageResource(tx.recipientPhoto);
-            holder.tvNombre.setText(tx.recipientName);
+
+            boolean esIngreso = "ingreso".equals(tx.type);
+            if (esIngreso) {
+                holder.tvNombre.setText(tx.recipientName);
+                holder.tvMonto.setTextColor(holder.itemView.getContext().getColor(R.color.verde));
+            } else {
+                holder.tvNombre.setText("Enviado a: " + tx.recipientName);
+                holder.tvMonto.setTextColor(holder.itemView.getContext().getColor(R.color.rojo));
+            }
             holder.tvMonto.setText(String.format("$%.2f", tx.amount));
 
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());

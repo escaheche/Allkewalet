@@ -128,7 +128,8 @@ public class SendActivity extends AppCompatActivity {
                     savedPhotoRes,
                     amount,
                     notes,
-                    System.currentTimeMillis()
+                    System.currentTimeMillis(),
+                    "envio"
             );
 
             saveTransaction(transaction);
@@ -169,7 +170,7 @@ public class SendActivity extends AppCompatActivity {
         public int getPhotoRes() { return photoRes; }
     }
 
-    // Clase transacción
+    // Clase transacción (type: "ingreso" | "envio")
     public static class Transaction {
         public String recipientName;
         public String recipientEmail;
@@ -177,30 +178,39 @@ public class SendActivity extends AppCompatActivity {
         public double amount;
         public String notes;
         public long timestamp;
+        public String type;
 
         public Transaction(String recipientName, String recipientEmail, int recipientPhoto,
                            double amount, String notes, long timestamp) {
+            this(recipientName, recipientEmail, recipientPhoto, amount, notes, timestamp, "envio");
+        }
+
+        public Transaction(String recipientName, String recipientEmail, int recipientPhoto,
+                           double amount, String notes, long timestamp, String type) {
             this.recipientName = recipientName;
             this.recipientEmail = recipientEmail;
             this.recipientPhoto = recipientPhoto;
             this.amount = amount;
             this.notes = notes;
             this.timestamp = timestamp;
+            this.type = type != null ? type : "envio";
         }
 
         public String toJson() {
-            return recipientName + ";" + recipientEmail + ";" + recipientPhoto + ";" + amount + ";" + notes + ";" + timestamp;
+            return recipientName + ";" + recipientEmail + ";" + recipientPhoto + ";" + amount + ";" + notes + ";" + timestamp + ";" + type;
         }
 
         public static Transaction fromJson(String json) {
             String[] parts = json.split(";");
+            String type = parts.length >= 7 ? parts[6] : "envio";
             return new Transaction(
                     parts[0],
                     parts[1],
                     Integer.parseInt(parts[2]),
                     Double.parseDouble(parts[3]),
                     parts[4],
-                    Long.parseLong(parts[5])
+                    Long.parseLong(parts[5]),
+                    type
             );
         }
     }
